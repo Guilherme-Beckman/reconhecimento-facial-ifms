@@ -6,14 +6,16 @@ import numpy as np
 video_capture = cv2.VideoCapture(0)
 
 
-me_image = face_recognition.load_image_file("./images/me.jpg")
-carlinhos_image = face_recognition.load_image_file("./images/carlinhos.png")
+me_image = face_recognition.load_image_file("../face_recognition/images/me.jpg")
+carlinhos_image = face_recognition.load_image_file(
+    "../face_recognition/images/carlinhos.png"
+)
 me_face_encoding = face_recognition.face_encodings(me_image)[0]
 carlinhos_face_encoding = face_recognition.face_encodings(carlinhos_image)[0]
 
 print(carlinhos_face_encoding)
 
-known_face_encodings = [me_face_encoding]
+known_face_encodings = [me_face_encoding, carlinhos_face_encoding]
 known_face_names = ["Beckman", "Carlinhos"]
 
 
