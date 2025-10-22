@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Face Stream</title>
+  <style>
+    body { background: #111; color: #fff; text-align: center; }
+    img { width: 80%; border-radius: 12px; margin-top: 20px; }
+    .names { margin-top: 10px; font-size: 1.2em; }
+  </style>
+</head>
+<body>
+  <h1>🔴 Face Recognition Live Stream</h1>
+  <img id="video" />
+  <div class="names" id="names"></div>
+
+  <script>
+    const ws = new WebSocket("ws://" + location.host + "/ws");
+    const img = document.getElementById("video");
+    const namesDiv = document.getElementById("names");
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      img.src = "data:image/jpeg;base64," + data.frame;
+      namesDiv.innerHTML = "Detectados: " + (data.names.join(", ") || "Nenhum");
+    };
+  </script>
+</body>
+</html>
