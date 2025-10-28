@@ -3,16 +3,9 @@ from cv2.gapi import video
 import face_recognition
 import numpy as np
 
-PROCESS_THIS_FRAME = True
 VERTICAL_REDUCTION = 0.25
 HORIZONTAL_REDUCTION = 0.25
 UNKNOWN_NAME = "Desconhecido"
-
-
-def face_rec(video_capture):
-    known_face_encodings = load_face_encodings()
-
-    known_face_names = load_face_names()
 
 
 def load_face_encodings():
@@ -44,6 +37,7 @@ def recognize_faces(frame, known_face_encodings, know_face_names):
         face_names.append(
             get_match_name(known_face_encodings, know_face_names, face_encoding)
         )
+    return draw_identifier(frame, face_locations, face_names)
 
 
 def adapt_frame(frame):
@@ -65,3 +59,25 @@ def get_match_name(known_face_encodings, known_face_names, face_encoding):
     if matches[best_match_index]:
         name = known_face_names[best_match_index]
     return name
+
+
+def draw_identifier(frame, face_locations, face_names):
+    for (top, right, bottom, left), name in zip(face_locations, face_names):
+        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+        cv2.rectangle(
+            frame,
+            (left, bottom - 35),
+            (right, bottom),
+            (0, 0, 255),
+            cv2.FILLED,
+        )
+        cv2.putText(
+            frame,
+            name,
+            (left + 6, bottom - 6),
+            cv2.FONT_HERSHEY_DUPLEX,
+            1.0,
+            (255, 255, 255),
+            1,
+        )
+    return frame
