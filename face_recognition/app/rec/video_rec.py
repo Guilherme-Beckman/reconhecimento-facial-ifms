@@ -1,3 +1,4 @@
+import base64
 import cv2
 from cv2.gapi import video
 import face_recognition
@@ -37,7 +38,7 @@ def recognize_faces(frame, known_face_encodings, know_face_names):
         face_names.append(
             get_match_name(known_face_encodings, know_face_names, face_encoding)
         )
-    return draw_identifier(frame, face_locations, face_names)
+    return face_names, draw_identifier(frame, face_locations, face_names)
 
 
 def adapt_frame(frame):
@@ -81,3 +82,10 @@ def draw_identifier(frame, face_locations, face_names):
             1,
         )
     return frame
+
+
+def create_buffer(frame):
+    _, buffer = cv2.imencode(".jpg", frame)
+    frame_bytes = buffer.tobytes()
+    frame_b64 = base64.b64encode(frame_bytes).decode("utf-8")
+    return frame_b64

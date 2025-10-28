@@ -1,6 +1,6 @@
 import cv2
 import face_recognition
-from fastapi import FastAPI, WebSocket, websockets
+from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import asyncio
