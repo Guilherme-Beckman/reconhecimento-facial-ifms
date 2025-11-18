@@ -1,5 +1,14 @@
-# app/main.py
-import uvicorn
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from app.api.routes import websocket
+from fastapi import FastAPI
 
-if __name__ == "__main__":
-    uvicorn.run("app.server:app", host="0.0.0.0", port=8000, reload=True)
+app = FastAPI()
+
+app.include_router(websocket.router)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.get("/")
+def home():
+    return HTMLResponse(open("app/static/index.html").read())

@@ -6,7 +6,7 @@ from app.rec import video_rec
 router = APIRouter()
 
 
-@router.websocket("/")
+@router.websocket("/ws")
 async def websocket(websocket: WebSocket):
     await websocket.accept()
     video_capture = cv2.VideoCapture(0)
@@ -16,7 +16,7 @@ async def websocket(websocket: WebSocket):
     try:
         while True:
             frame = video_rec.check_frame(video_capture)
-            if not frame:
+            if frame is None:
                 await asyncio.sleep(0.1)
                 continue
             if process_this_frame:

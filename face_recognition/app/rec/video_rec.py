@@ -14,8 +14,8 @@ def load_face_encodings():
     carlinhos_image = face_recognition.load_image_file("../../images/carlinhos.png")
 
     known_face_encodings = [
-        face_recognition.face_encodings(me_image),
-        face_recognition.face_encodings(carlinhos_image),
+        face_recognition.face_encodings(me_image)[0],
+        face_recognition.face_encodings(carlinhos_image)[0],
     ]
     return known_face_encodings
 
@@ -45,7 +45,7 @@ def adapt_frame(frame):
     small_frame = cv2.resize(
         frame, (0, 0), fx=VERTICAL_REDUCTION, fy=HORIZONTAL_REDUCTION
     )
-    rgb_small_frame = (small_frame, cv2.COLOR_BGR2RGB)
+    rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
     return rgb_small_frame
 
 
@@ -64,6 +64,10 @@ def get_match_name(known_face_encodings, known_face_names, face_encoding):
 
 def draw_identifier(frame, face_locations, face_names):
     for (top, right, bottom, left), name in zip(face_locations, face_names):
+        top *= 4
+        right *= 4
+        bottom *= 4
+        left *= 4
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
         cv2.rectangle(
             frame,

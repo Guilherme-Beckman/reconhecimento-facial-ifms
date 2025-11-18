@@ -48,4 +48,4 @@ RUN pip install --no-cache-dir /wheels/*
 COPY ./images/ ./images
 COPY ./app/ ./app
 
-CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
