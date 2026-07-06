@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastro de Rosto</title>
+  <style>
+    body { background: #111; color: #fff; font-family: sans-serif; text-align: center; padding: 40px; }
+    h1 { margin-bottom: 30px; }
+    img { width: 320px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #e74c3c; }
+    input, button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      width: 320px;
+    }
+    input { background: #222; color: #fff; border: 1px solid #444; }
+    button {
+      background: #27ae60;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover { background: #1e8449; }
+    #msg { margin-top: 20px; font-size: 1.1em; }
+  </style>
+</head>
+<body>
+  <h1>📋 Cadastro de Novo Rosto</h1>
+  <img id="preview" src="" alt="Foto capturada" />
+  <input type="text" id="nome" placeholder="Nome completo" />
+  <input type="text" id="matricula" placeholder="Matrícula (opcional)" />
+  <button onclick="cadastrar()">✅ Cadastrar</button>
+  <div id="msg"></div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const foto = params.get("foto");
+    document.getElementById("preview").src = "data:image/jpeg;base64," + foto;
+
+    async function cadastrar() {
+      const nome = document.getElementById("nome").value.trim();
+      const matricula = document.getElementById("matricula").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!nome) {
+        msg.innerHTML = "⚠️ Por favor, informe o nome.";
+        return;
+      }
+
+      const res = await fetch("/cadastrar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, matricula, foto })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        msg.innerHTML = "✅ " + data.mensagem;
+        msg.style.color = "#27ae60";
+      } else {
+        msg.innerHTML = "❌ " + data.detail;
+        msg.style.color = "#e74c3c";
+      }
+    }
+  </script>
+</body>
+</html>
