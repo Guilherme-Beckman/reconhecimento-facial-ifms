@@ -18,7 +18,13 @@ def check_frame(video_capture):
 
 def recognize_faces(frame, known_face_encodings, known_face_names):
     if not known_face_encodings:
-        return [], draw_identifier(frame, [], [])
+        adapted_frame = adapt_frame(frame)
+        face_locations = face_recognition.face_locations(adapted_frame)
+        if face_locations:
+            foto_bytes = capturar_foto(frame)
+            salvar_auditoria(foto_bytes)
+            return ["Desconhecido"], draw_identifier(frame, face_locations, ["Desconhecido"])
+        return ["Nenhum rosto visível"], draw_identifier(frame, [], [])
 
     adapted_frame = adapt_frame(frame)
     face_locations = face_recognition.face_locations(adapted_frame)
@@ -36,7 +42,6 @@ def recognize_faces(frame, known_face_encodings, known_face_names):
         face_names = ["Nenhum rosto visível"]
 
     return face_names, draw_identifier(frame, face_locations, face_names)
-
 def adapt_frame(frame):
     small_frame = cv2.resize(
         frame, (0, 0), fx=VERTICAL_REDUCTION, fy=HORIZONTAL_REDUCTION
