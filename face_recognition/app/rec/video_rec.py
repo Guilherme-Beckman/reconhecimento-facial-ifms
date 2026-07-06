@@ -10,18 +10,18 @@ UNKNOWN_NAME = "Desconhecido"
 
 
 def load_face_encodings():
-    me_image = face_recognition.load_image_file("../../images/me.jpg")
-    carlinhos_image = face_recognition.load_image_file("../../images/carlinhos.png")
+    me_image = face_recognition.load_image_file("images/gabriel.jpeg")
+    
 
     known_face_encodings = [
         face_recognition.face_encodings(me_image)[0],
-        face_recognition.face_encodings(carlinhos_image)[0],
+        
     ]
     return known_face_encodings
 
 
 def load_face_names():
-    return ["Beckman", "Carlinhos"]
+    return ["Gabriel"]
 
 
 def check_frame(video_capture):
