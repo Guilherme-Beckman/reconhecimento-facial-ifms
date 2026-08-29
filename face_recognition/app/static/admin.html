@@ -15,11 +15,7 @@
       border-bottom: 1px solid #333;
     }
     header h1 { font-size: 1.2em; }
-    .tabs {
-      display: flex;
-      gap: 8px;
-      padding: 20px 32px 0;
-    }
+    .tabs { display: flex; gap: 8px; padding: 20px 32px 0; }
     .tab {
       padding: 10px 24px;
       border-radius: 8px 8px 0 0;
@@ -43,12 +39,7 @@
     .card img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #333; }
     .card .info { flex: 1; }
     .card .info p { color: #aaa; font-size: 0.9em; margin-top: 4px; }
-    .badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.8em;
-      font-weight: bold;
-    }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
     .badge.pendente { background: #e67e22; }
     .badge.aprovado { background: #27ae60; }
     .badge.rejeitado { background: #e74c3c; }
@@ -56,28 +47,13 @@
     .badge.user { background: #2980b9; }
     .badge.admin { background: #8e44ad; }
     .actions { display: flex; gap: 8px; flex-direction: column; }
-    .btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9em;
-      font-weight: bold;
-    }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: bold; }
     .btn-green { background: #27ae60; color: #fff; }
     .btn-red { background: #e74c3c; color: #fff; }
     .btn-gray { background: #444; color: #fff; }
     .btn-blue { background: #2980b9; color: #fff; }
     .empty { color: #555; text-align: center; padding: 40px; }
-    .section-title {
-      font-size: 1em;
-      color: #aaa;
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #333;
-    }
-
-    /* Modal cadastro direto */
+    .section-title { font-size: 1em; color: #aaa; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #333; }
     .modal-overlay {
       display: none;
       position: fixed;
@@ -88,26 +64,9 @@
       z-index: 100;
     }
     .modal-overlay.open { display: flex; }
-    .modal {
-      background: #1a1a1a;
-      border-radius: 12px;
-      padding: 32px;
-      width: 400px;
-      text-align: center;
-    }
+    .modal { background: #1a1a1a; border-radius: 12px; padding: 32px; width: 400px; text-align: center; }
     .modal h2 { margin-bottom: 20px; }
-    .modal input {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
-      padding: 10px;
-      background: #222;
-      border: 1px solid #444;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 1em;
-    }
-    .modal select {
+    .modal input, .modal select {
       display: block;
       width: 100%;
       margin: 8px 0;
@@ -132,9 +91,9 @@
 </header>
 
 <div class="tabs">
-  <button class="tab active" onclick="showTab('solicitacoes')">📨 Solicitações</button>
-  <button class="tab" onclick="showTab('usuarios')">👥 Usuários</button>
-  <button class="tab" onclick="showTab('auditoria')">🔍 Auditoria</button>
+  <button class="tab active" onclick="showTab('solicitacoes', event)">📨 Solicitações</button>
+  <button class="tab" onclick="showTab('usuarios', event)">👥 Usuários</button>
+  <button class="tab" onclick="showTab('auditoria', event)">🔍 Auditoria</button>
 </div>
 
 <div class="content">
@@ -155,6 +114,7 @@
   <!-- ABA AUDITORIA -->
   <div id="tab-auditoria" style="display:none">
     <p class="section-title">Histórico de rostos desconhecidos</p>
+    <button class="btn btn-red" style="margin-bottom:16px" onclick="limparAuditoria()">🗑️ Limpar registros antigos (+7 dias)</button>
     <div id="lista-auditoria"></div>
   </div>
 
@@ -182,11 +142,11 @@
 <script>
   let stream = null;
 
-  function showTab(tab) {
+  function showTab(tab, e) {
     document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
     document.getElementById('tab-' + tab).style.display = 'block';
-    event.target.classList.add('active');
+    e.target.classList.add('active');
     if (tab === 'solicitacoes') carregarSolicitacoes();
     if (tab === 'usuarios') carregarUsuarios();
     if (tab === 'auditoria') carregarAuditoria();
@@ -297,6 +257,14 @@
           </div>
         </div>`;
     }
+  }
+
+  async function limparAuditoria() {
+    if (!confirm('Remover registros desconhecidos com mais de 7 dias?')) return;
+    const res = await fetch('/api/auditoria/limpar', { method: 'DELETE' });
+    const data = await res.json();
+    alert(data.mensagem);
+    carregarAuditoria();
   }
 
   // ── MODAL CADASTRO DIRETO ─────────────────────────────

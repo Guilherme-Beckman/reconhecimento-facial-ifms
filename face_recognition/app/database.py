@@ -142,3 +142,18 @@ def aprovar_solicitacao(auditoria_id):
     salvar_usuario(nome, matricula, encodings[0])
     atualizar_status_auditoria(auditoria_id, 'aprovado')
     return True, "Usuário cadastrado com sucesso"
+
+def limpar_auditoria_antiga(dias=7):
+    """Remove registros de auditoria mais antigos que X dias com status desconhecido."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        DELETE FROM auditoria 
+        WHERE status = 'desconhecido' 
+        AND momento < NOW() - INTERVAL '%s days'
+    """, (dias,))
+    deletados = cur.rowcount
+    conn.commit()
+    cur.close()
+    conn.close()
+    return deletados

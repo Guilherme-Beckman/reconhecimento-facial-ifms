@@ -9,7 +9,7 @@ HORIZONTAL_REDUCTION = 0.25
 UNKNOWN_NAME = "Desconhecido"
 
 def load_face_encodings():
-    nomes, encodings = carregar_usuarios()
+    encodings, nomes = carregar_usuarios()
     return encodings, nomes
 
 def check_frame(video_capture):
@@ -17,14 +17,16 @@ def check_frame(video_capture):
     return frame if ret else None
 
 def recognize_faces(frame, known_face_encodings, known_face_names):
+    auditoria_id = None
+
     if not known_face_encodings:
         adapted_frame = adapt_frame(frame)
         face_locations = face_recognition.face_locations(adapted_frame)
         if face_locations:
             foto_bytes = capturar_foto(frame)
-            salvar_auditoria(foto_bytes)
-            return ["Desconhecido"], draw_identifier(frame, face_locations, ["Desconhecido"])
-        return ["Nenhum rosto visível"], draw_identifier(frame, [], [])
+            auditoria_id = salvar_auditoria(foto_bytes, status='desconhecido')
+            return ["Desconhecido"], draw_identifier(frame, face_locations, ["Desconhecido"]), auditoria_id
+        return ["Nenhum rosto visível"], draw_identifier(frame, [], []), None
 
     adapted_frame = adapt_frame(frame)
     face_locations = face_recognition.face_locations(adapted_frame)
@@ -35,13 +37,14 @@ def recognize_faces(frame, known_face_encodings, known_face_names):
         name = get_match_name(known_face_encodings, known_face_names, face_encoding)
         if name == UNKNOWN_NAME:
             foto_bytes = capturar_foto(frame)
-            salvar_auditoria(foto_bytes)
+            auditoria_id = salvar_auditoria(foto_bytes, status='desconhecido')
         face_names.append(name)
 
     if not face_locations:
         face_names = ["Nenhum rosto visível"]
 
-    return face_names, draw_identifier(frame, face_locations, face_names)
+    return face_names, draw_identifier(frame, face_locations, face_names), auditoria_id
+
 def adapt_frame(frame):
     small_frame = cv2.resize(
         frame, (0, 0), fx=VERTICAL_REDUCTION, fy=HORIZONTAL_REDUCTION
@@ -65,22 +68,8 @@ def draw_identifier(frame, face_locations, face_names):
         bottom *= 4
         left *= 4
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-        cv2.rectangle(
-            frame,
-            (left, bottom - 35),
-            (right, bottom),
-            (0, 0, 255),
-            cv2.FILLED,
-        )
-        cv2.putText(
-            frame,
-            name,
-            (left + 6, bottom - 6),
-            cv2.FONT_HERSHEY_DUPLEX,
-            1.0,
-            (255, 255, 255),
-            1,
-        )
+        cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
+        cv2.putText(frame, name, (left + 6, bottom - 6), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255), 1)
     return frame
 
 def capturar_foto(frame):

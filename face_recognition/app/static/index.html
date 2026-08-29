@@ -38,9 +38,9 @@
       let ultimoAuditoriaId = null;
 
         ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+        const data = JSON.parse(event.data);
+        console.log("dados recebidos:", data);
         img.src = "data:image/jpeg;base64," + data.frame;
-        ultimoFrame = data.frame;
 
       if (data.auditoria_id) {
         ultimoAuditoriaId = data.auditoria_id;
