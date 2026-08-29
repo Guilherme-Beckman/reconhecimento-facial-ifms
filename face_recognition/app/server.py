@@ -29,7 +29,7 @@ async def websocket(websocket: WebSocket):
 
     known_face_encodings = [
         face_recognition.face_encodings(me_image)[0],
-        face_recognition.face_encodings(carlinhos_image)[0],
+        face_recognition.face_encodings(carlinhos_image)[0], 
     ]
     known_face_names = ["Beckman", "Carlinhos"]
 
@@ -56,7 +56,7 @@ async def websocket(websocket: WebSocket):
                     matches = face_recognition.compare_faces(
                         known_face_encodings, face_encoding
                     )
-                    name = "Unknown"
+                    name = "Unknown" 
                     face_distances = face_recognition.face_distance(
                         known_face_encodings, face_encoding
                     )
@@ -86,7 +86,7 @@ async def websocket(websocket: WebSocket):
                         1.0,
                         (255, 255, 255),
                         1,
-                    )
+                    ) 
 
                 _, buffer = cv2.imencode(".jpg", frame)
                 frame_bytes = buffer.tobytes()  # 🔹 converte ndarray para bytes

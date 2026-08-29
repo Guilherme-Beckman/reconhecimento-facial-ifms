@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #111; color: #fff; font-family: sans-serif; }
+    header {
+      background: #1a1a1a;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+    header h1 { font-size: 1.2em; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 20px 32px 0;
+    }
+    .tab {
+      padding: 10px 24px;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      background: #222;
+      color: #aaa;
+      border: none;
+      font-size: 1em;
+    }
+    .tab.active { background: #1db954; color: #fff; }
+    .content { padding: 24px 32px; }
+    .card {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .card img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #333; }
+    .card .info { flex: 1; }
+    .card .info p { color: #aaa; font-size: 0.9em; margin-top: 4px; }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+    .badge.pendente { background: #e67e22; }
+    .badge.aprovado { background: #27ae60; }
+    .badge.rejeitado { background: #e74c3c; }
+    .badge.desconhecido { background: #555; }
+    .badge.user { background: #2980b9; }
+    .badge.admin { background: #8e44ad; }
+    .actions { display: flex; gap: 8px; flex-direction: column; }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+    .btn-green { background: #27ae60; color: #fff; }
+    .btn-red { background: #e74c3c; color: #fff; }
+    .btn-gray { background: #444; color: #fff; }
+    .btn-blue { background: #2980b9; color: #fff; }
+    .empty { color: #555; text-align: center; padding: 40px; }
+    .section-title {
+      font-size: 1em;
+      color: #aaa;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #333;
+    }
+
+    /* Modal cadastro direto */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 32px;
+      width: 400px;
+      text-align: center;
+    }
+    .modal h2 { margin-bottom: 20px; }
+    .modal input {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1em;
+    }
+    .modal select {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1em;
+    }
+    .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .modal-actions button { flex: 1; }
+    #msg-modal { margin-top: 12px; font-size: 0.95em; }
+    video { width: 100%; border-radius: 8px; margin: 12px 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🔐 Painel do Administrador</h1>
+  <a href="/" style="color:#aaa; text-decoration:none;">← Voltar</a>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('solicitacoes')">📨 Solicitações</button>
+  <button class="tab" onclick="showTab('usuarios')">👥 Usuários</button>
+  <button class="tab" onclick="showTab('auditoria')">🔍 Auditoria</button>
+</div>
+
+<div class="content">
+
+  <!-- ABA SOLICITAÇÕES -->
+  <div id="tab-solicitacoes">
+    <p class="section-title">Solicitações pendentes de acesso</p>
+    <div id="lista-solicitacoes"></div>
+  </div>
+
+  <!-- ABA USUÁRIOS -->
+  <div id="tab-usuarios" style="display:none">
+    <p class="section-title">Usuários cadastrados</p>
+    <button class="btn btn-blue" style="margin-bottom:16px" onclick="abrirModal()">➕ Novo usuário</button>
+    <div id="lista-usuarios"></div>
+  </div>
+
+  <!-- ABA AUDITORIA -->
+  <div id="tab-auditoria" style="display:none">
+    <p class="section-title">Histórico de rostos desconhecidos</p>
+    <div id="lista-auditoria"></div>
+  </div>
+
+</div>
+
+<!-- MODAL CADASTRO DIRETO -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>➕ Novo Usuário</h2>
+    <video id="camera" autoplay></video>
+    <input type="text" id="modal-nome" placeholder="Nome completo" />
+    <input type="text" id="modal-matricula" placeholder="Matrícula" />
+    <select id="modal-tipo">
+      <option value="user">Usuário comum</option>
+      <option value="admin">Administrador</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn btn-green" onclick="cadastrarDireto()">✅ Cadastrar</button>
+      <button class="btn btn-gray" onclick="fecharModal()">Cancelar</button>
+    </div>
+    <div id="msg-modal"></div>
+  </div>
+</div>
+
+<script>
+  let stream = null;
+
+  function showTab(tab) {
+    document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab).style.display = 'block';
+    event.target.classList.add('active');
+    if (tab === 'solicitacoes') carregarSolicitacoes();
+    if (tab === 'usuarios') carregarUsuarios();
+    if (tab === 'auditoria') carregarAuditoria();
+  }
+
+  // ── SOLICITAÇÕES ──────────────────────────────────────
+
+  async function carregarSolicitacoes() {
+    const res = await fetch('/api/auditoria?status=pendente');
+    const data = await res.json();
+    const lista = document.getElementById('lista-solicitacoes');
+    if (data.length === 0) {
+      lista.innerHTML = '<p class="empty">Nenhuma solicitação pendente.</p>';
+      return;
+    }
+    lista.innerHTML = '';
+    for (const item of data) {
+      const fotoRes = await fetch(`/api/auditoria/${item.id}/foto`);
+      const fotoData = await fotoRes.json();
+      lista.innerHTML += `
+        <div class="card" id="card-${item.id}">
+          <img src="data:image/jpeg;base64,${fotoData.foto}" />
+          <div class="info">
+            <strong>${item.nome || 'Sem nome'}</strong>
+            <p>Matrícula: ${item.matricula || '-'}</p>
+            <p>${item.momento}</p>
+            <span class="badge pendente">pendente</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-green" onclick="aprovar(${item.id})">✅ Aprovar</button>
+            <button class="btn btn-red" onclick="rejeitar(${item.id})">❌ Rejeitar</button>
+          </div>
+        </div>`;
+    }
+  }
+
+  async function aprovar(id) {
+    const res = await fetch(`/api/auditoria/${id}/aprovar`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById(`card-${id}`).remove();
+      alert('✅ ' + data.mensagem);
+    } else {
+      alert('❌ ' + data.detail);
+    }
+  }
+
+  async function rejeitar(id) {
+    if (!confirm('Rejeitar esta solicitação?')) return;
+    const res = await fetch(`/api/auditoria/${id}/rejeitar`, { method: 'POST' });
+    if (res.ok) document.getElementById(`card-${id}`).remove();
+  }
+
+  // ── USUÁRIOS ──────────────────────────────────────────
+
+  async function carregarUsuarios() {
+    const res = await fetch('/api/usuarios');
+    const data = await res.json();
+    const lista = document.getElementById('lista-usuarios');
+    if (data.length === 0) {
+      lista.innerHTML = '<p class="empty">Nenhum usuário cadastrado.</p>';
+      return;
+    }
+    lista.innerHTML = '';
+    for (const u of data) {
+      lista.innerHTML += `
+        <div class="card" id="user-${u.id}">
+          <div class="info">
+            <strong>${u.nome}</strong>
+            <p>Matrícula: ${u.matricula || '-'}</p>
+            <p>Cadastrado em: ${u.criado_em}</p>
+            <span class="badge ${u.tipo}">${u.tipo}</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-red" onclick="deletarUsuario(${u.id})">🗑️ Remover</button>
+          </div>
+        </div>`;
+    }
+  }
+
+  async function deletarUsuario(id) {
+    if (!confirm('Remover este usuário?')) return;
+    const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+    if (res.ok) document.getElementById(`user-${id}`).remove();
+  }
+
+  // ── AUDITORIA ─────────────────────────────────────────
+
+  async function carregarAuditoria() {
+    const res = await fetch('/api/auditoria?status=desconhecido');
+    const data = await res.json();
+    const lista = document.getElementById('lista-auditoria');
+    if (data.length === 0) {
+      lista.innerHTML = '<p class="empty">Nenhum registro de auditoria.</p>';
+      return;
+    }
+    lista.innerHTML = '';
+    for (const item of data) {
+      const fotoRes = await fetch(`/api/auditoria/${item.id}/foto`);
+      const fotoData = await fotoRes.json();
+      lista.innerHTML += `
+        <div class="card">
+          <img src="data:image/jpeg;base64,${fotoData.foto}" />
+          <div class="info">
+            <strong>Rosto desconhecido</strong>
+            <p>${item.momento}</p>
+            <span class="badge desconhecido">desconhecido</span>
+          </div>
+        </div>`;
+    }
+  }
+
+  // ── MODAL CADASTRO DIRETO ─────────────────────────────
+
+  async function abrirModal() {
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('msg-modal').innerHTML = '';
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('camera').srcObject = stream;
+  }
+
+  function fecharModal() {
+    document.getElementById('modal').classList.remove('open');
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  }
+
+  async function cadastrarDireto() {
+    const nome = document.getElementById('modal-nome').value.trim();
+    const matricula = document.getElementById('modal-matricula').value.trim();
+    const tipo = document.getElementById('modal-tipo').value;
+    const msg = document.getElementById('msg-modal');
+
+    if (!nome || !matricula) {
+      msg.innerHTML = '⚠️ Preencha nome e matrícula.';
+      return;
+    }
+
+    const video = document.getElementById('camera');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const foto = canvas.toDataURL('image/jpeg').split(',')[1];
+
+    const res = await fetch('/api/cadastrar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, matricula, foto, tipo })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      msg.innerHTML = '✅ ' + data.mensagem;
+      msg.style.color = '#27ae60';
+      setTimeout(() => { fecharModal(); carregarUsuarios(); }, 1500);
+    } else {
+      msg.innerHTML = '❌ ' + data.detail;
+      msg.style.color = '#e74c3c';
+    }
+  }
+
+  // Carrega ao abrir
+  carregarSolicitacoes();
+</script>
+</body>
+</html>

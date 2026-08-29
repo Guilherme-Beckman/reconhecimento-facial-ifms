@@ -28,40 +28,44 @@
   <div class="names" id="names"></div>
   <a id="btn-cadastrar">⚠️ Rosto não reconhecido — Cadastrar</a>
 
-  <script>
-    const ws = new WebSocket("ws://" + location.host + "/ws");
-    const img = document.getElementById("video");
-    const namesDiv = document.getElementById("names");
-    const btnCadastrar = document.getElementById("btn-cadastrar");
+    <script>
+      const ws = new WebSocket("ws://" + location.host + "/ws");
+      const img = document.getElementById("video");
+      const namesDiv = document.getElementById("names");
+      const btnCadastrar = document.getElementById("btn-cadastrar");
 
-    let ultimoFrame = null;
+      let ultimoFrame = null;
+      let ultimoAuditoriaId = null;
 
-    ws.onmessage = (event) => {
+        ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      img.src = "data:image/jpeg;base64," + data.frame;
-      ultimoFrame = data.frame;
+        img.src = "data:image/jpeg;base64," + data.frame;
+        ultimoFrame = data.frame;
+
+      if (data.auditoria_id) {
+        ultimoAuditoriaId = data.auditoria_id;
+        }
+
       const nomes = data.names || [];
       const temConhecido = nomes.some(n => n !== "Desconhecido" && n !== "Nenhum rosto visível");
 
       if (nomes.length === 0 || nomes[0] === "Nenhum rosto visível") {
         namesDiv.innerHTML = "Nenhum rosto visível";
         namesDiv.style.color = "#ffffff";
+        btnCadastrar.style.display = "none";
       } else if (temConhecido) {
         namesDiv.innerHTML = "✅ Entrada permitida — " + nomes.join(", ");
         namesDiv.style.color = "#27ae60";
+        btnCadastrar.style.display = "none";
       } else {
         namesDiv.innerHTML = "❌ Rosto não reconhecido";
         namesDiv.style.color = "#e74c3c";
-      }
-
-      const temDesconhecido = data.names.some(n => n === "Desconhecido");
-      if (temDesconhecido) {
+      if (ultimoAuditoriaId) {
         btnCadastrar.style.display = "inline-block";
-        btnCadastrar.href = "/cadastro?foto=" + encodeURIComponent(ultimoFrame);
-      } else {
-        btnCadastrar.style.display = "none";
+        btnCadastrar.href = "/cadastro?foto=" + encodeURIComponent(ultimoFrame) + "&auditoria_id=" + ultimoAuditoriaId;
       }
-    };
-  </script>
+    }
+  };
+</script>
 </body>
 </html>
