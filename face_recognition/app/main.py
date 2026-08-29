@@ -127,3 +127,12 @@ def cadastrar_direto(req: NovoUsuarioRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/auditoria/limpar")
+def limpar_auditoria(dias: int = 7):
+    try:
+        from app.database import limpar_auditoria_antiga
+        deletados = limpar_auditoria_antiga(dias)
+        return {"mensagem": f"{deletados} registros removidos"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
