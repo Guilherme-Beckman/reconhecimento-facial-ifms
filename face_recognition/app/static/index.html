@@ -40,7 +40,19 @@
       const data = JSON.parse(event.data);
       img.src = "data:image/jpeg;base64," + data.frame;
       ultimoFrame = data.frame;
-      namesDiv.innerHTML = "Detectados: " + (data.names.join(", ") || "Nenhum");
+      const nomes = data.names || [];
+      const temConhecido = nomes.some(n => n !== "Desconhecido" && n !== "Nenhum rosto visível");
+
+      if (nomes.length === 0 || nomes[0] === "Nenhum rosto visível") {
+        namesDiv.innerHTML = "Nenhum rosto visível";
+        namesDiv.style.color = "#ffffff";
+      } else if (temConhecido) {
+        namesDiv.innerHTML = "✅ Entrada permitida — " + nomes.join(", ");
+        namesDiv.style.color = "#27ae60";
+      } else {
+        namesDiv.innerHTML = "❌ Rosto não reconhecido";
+        namesDiv.style.color = "#e74c3c";
+      }
 
       const temDesconhecido = data.names.some(n => n === "Desconhecido");
       if (temDesconhecido) {
