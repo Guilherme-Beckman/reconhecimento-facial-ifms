@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Face Stream</title>
+  <style>
+    body { background: #111; color: #fff; text-align: center; font-family: sans-serif; }
+    img { width: 50%; border-radius: 12px; margin-top: 20px; }
+    .names { margin-top: 10px; font-size: 1.2em; }
+    #btn-cadastrar {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 28px;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1em;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    #btn-cadastrar:hover { background: #c0392b; }
+  </style>
+</head>
+<body>
+  <h1>🔴 Face Recognition Live Stream</h1>
+  <img id="video" />
+  <div class="names" id="names"></div>
+  <a id="btn-cadastrar">⚠️ Rosto não reconhecido — Cadastrar</a>
+
+    <script>
+      const ws = new WebSocket("ws://" + location.host + "/ws");
+      const img = document.getElementById("video");
+      const namesDiv = document.getElementById("names");
+      const btnCadastrar = document.getElementById("btn-cadastrar");
+
+      let ultimoFrame = null;
+      let ultimoAuditoriaId = null;
+
+        ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("dados recebidos:", data);
+        img.src = "data:image/jpeg;base64," + data.frame;
+
+      if (data.auditoria_id) {
+        ultimoAuditoriaId = data.auditoria_id;
+        }
+
+      const nomes = data.names || [];
+      const temConhecido = nomes.some(n => n !== "Desconhecido" && n !== "Nenhum rosto visível");
+
+      if (nomes.length === 0 || nomes[0] === "Nenhum rosto visível") {
+        namesDiv.innerHTML = "Nenhum rosto visível";
+        namesDiv.style.color = "#ffffff";
+        btnCadastrar.style.display = "none";
+      } else if (temConhecido) {
+        namesDiv.innerHTML = "✅ Entrada permitida — " + nomes.join(", ");
+        namesDiv.style.color = "#27ae60";
+        btnCadastrar.style.display = "none";
+      } else {
+        namesDiv.innerHTML = "❌ Rosto não reconhecido";
+        namesDiv.style.color = "#e74c3c";
+      if (ultimoAuditoriaId) {
+        btnCadastrar.style.display = "inline-block";
+        btnCadastrar.href = "/cadastro?foto=" + encodeURIComponent(ultimoFrame) + "&auditoria_id=" + ultimoAuditoriaId;
+      }
+    }
+  };
+</script>
+</body>
+</html>

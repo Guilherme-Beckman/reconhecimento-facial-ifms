@@ -87,6 +87,3 @@ Algumas das obras e estudos utilizados:
 
 > Consulte o relatório técnico completo para a lista completa de referências e fundamentações teóricas.
 
----
-
-Se quiser, posso gerar também o arquivo `requirements.txt` inicial com as dependências básicas (`opencv-python`, `face_recognition`, etc.). Deseja isso?

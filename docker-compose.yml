@@ -1,0 +1,36 @@
+services:
+  face-recognition:
+    build: ./face_recognition/
+    container_name: face_recognition_service
+    network_mode: host
+    volumes:
+      - ./face_recognition/images/:/images
+      - ./face_recognition/app/:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_HOST=localhost
+      - DB_PORT=5432
+      - DB_NAME=facial_ifms
+      - DB_USER=admin
+      - DB_PASSWORD=senha123
+    devices:
+      - "/dev/video0:/dev/video0"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    container_name: postgres-facial
+    environment:
+      - POSTGRES_DB=facial_ifms
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=senha123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

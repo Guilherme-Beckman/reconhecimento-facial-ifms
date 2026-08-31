@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Solicitar Acesso</title>
+  <style>
+    body { background: #111; color: #fff; font-family: sans-serif; text-align: center; padding: 40px; }
+    h1 { margin-bottom: 10px; }
+    p.sub { color: #aaa; margin-bottom: 30px; font-size: 0.95em; }
+    img { width: 320px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #e67e22; }
+    input, button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      width: 320px;
+    }
+    input { background: #222; color: #fff; border: 1px solid #444; }
+    button {
+      background: #e67e22;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover { background: #d35400; }
+    #msg { margin-top: 20px; font-size: 1.1em; }
+  </style>
+</head>
+<body>
+  <h1>📋 Solicitar Acesso</h1>
+  <p class="sub">Preencha seus dados. Um administrador irá revisar sua solicitação.</p>
+  <img id="preview" src="" alt="Foto capturada" />
+  <input type="text" id="nome" placeholder="Nome completo" />
+  <input type="text" id="matricula" placeholder="Matrícula" />
+  <button onclick="solicitar()">📨 Enviar Solicitação</button>
+  <div id="msg"></div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const foto = params.get("foto");
+    const auditoriaId = params.get("auditoria_id");
+    document.getElementById("preview").src = "data:image/jpeg;base64," + foto;
+
+    async function solicitar() {
+      const nome = document.getElementById("nome").value.trim();
+      const matricula = document.getElementById("matricula").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!nome || !matricula) {
+        msg.innerHTML = "⚠️ Preencha nome e matrícula.";
+        return;
+      }
+
+      const res = await fetch("/solicitar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, matricula, auditoria_id: parseInt(auditoriaId) })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        msg.innerHTML = "✅ " + data.mensagem;
+        msg.style.color = "#27ae60";
+      } else {
+        msg.innerHTML = "❌ " + data.detail;
+        msg.style.color = "#e74c3c";
+      }
+    }
+  </script>
+</body>
+</html>
